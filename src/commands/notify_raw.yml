@@ -1,0 +1,71 @@
+version: 2.1
+commands:
+  notify_raw:
+    description: Generate an xMatters event with the given JSON payload
+    parameters:
+      json_payload:
+        default: ""
+        description: The json object to send to xMatters. CHECKOUTTHEDOCSHERE
+        type: string
+      xm_url:
+        default: ${XM_URL}
+        description: Enter either your inbound integration url or use the CircleCI UI to add
+          your token under the 'XM_URL' env var
+        type: string
+    steps:
+    - run:
+        command: |
+          if [ -z "$BASH" ]; then
+            echo Bash not installed.
+            exit 1
+          fi
+        name: Provide error if non-bash shell
+    - run:
+        command: |
+          # Provide error if no url is set and error. Otherwise continue
+          if [ -z "<< parameters.xm_url >>" ]; then
+            echo "NO XM_URL SET"
+            echo "Please input your XM_URL value either in the settings for this project, or as a parameter for this orb."
+            exit 1
+          fi
+          if [-z "<< parameters.json_payload >>" ]; then
+            echo "NO json_payload passed"
+            echo "Enter some json to pass into xMatters. CHECKOUTTHEDOCSHERE"
+            exit 1
+          fi
+          
+          # Webhook properly set.
+          echo "Generating event to xMatters with payload '" << parameters.json_payload >> "'"
+          curl -X POST --header 'Content-type: application/json' \
+            --data '<< parameters.json_payload >>' \
+            "<< parameters.xm_url >>"          
+        name: xMatters Inbound Command
+        shell: /bin/bash
+description: |
+  Some nice helpful description sauce here.
+examples:
+  notify_raw:
+    description: 'Notify some people via xMatters using a custom payload'
+    usage:
+      jobs:
+        build:
+          docker:
+             - image: <docker image>
+          steps:
+             - xmatters/notify_raw:
+                xm_url: ${XM_URL}
+                json_payload: '{ "properties": { "Job": "job name here", "Author": "Deon Sanders" }, "recipients": [{"id": "dsanders"}] }'
+      orbs:
+        xmatters: circleci/xmatters@1.0.0
+      version: 2.1
+      workflows:
+        your-workflow:
+          jobs:
+          - build
+executors:
+  alpine:
+    docker:
+    - environment:
+        TERM: dumb
+      image: cibuilds/base:latest
+    resource_class: small

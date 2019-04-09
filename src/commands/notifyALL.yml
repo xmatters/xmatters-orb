@@ -1,0 +1,163 @@
+version: 2.1
+commands:
+  notify:
+    description: Generate an xMatters event
+    parameters:
+      author:
+        default: ""
+        description: Author of the build
+        type: string
+      project:
+        default: ""
+        description: Project the build is from
+        type: string
+      workflow:
+        default: ""
+        description: The name of the workflow
+        type: string
+      branch:
+        default: ""
+        description: The branch the commit is on
+        type: string
+      commit:
+        default: ""
+        description: The commit hash
+        type: string
+      job:
+        default: ""
+        description: The job name
+        type: string
+      job_status:
+        default: ""
+        description: The job status
+        type: string
+      xm_url:
+        default: ${XM_URL}
+        description: The inbound integration url. This can be stored in the CircleCI UI as the 'XM_URL' env var
+        type: string
+    steps:
+    - run:
+        command: |
+          if [ -z "$BASH" ]; then
+            echo Bash not installed.
+            exit 1
+          fi
+        name: Provide error if non-bash shell
+    - run:
+        command: |
+          # Provide error if no url is set and error. Otherwise continue
+          if [ -z "<< parameters.xm_url >>" ]; then
+            echo "NO XM_URL SET"
+            echo "Please input your XM_URL value either in the settings for this project, or as a parameter for this orb."
+            exit 1
+
+          # Webhook properly set.
+          echo Generating event to xMatters
+          curl -X POST -H 'Content-type: application/json' \
+            --data \
+            '{
+              "properties": {
+                "author":     "<< parameters.author >>",
+                "project":    "<< parameters.project >>",
+                "workflow":   "<< parameters.workflow >>",
+                "branch":     "<< parameters.branch >>",
+                "commit":     "<< parameters.commit >>",
+                "job":        "<< parameters.job >>",
+                "job_status": "<< parameters.job_status >>"
+              } 
+            }' "<< parameters.xm_url >>" 
+        name: xMatters Inbound Command
+        shell: /bin/bash
+  notify_raw:
+    description: Generate an xMatters event with the given JSON payload
+    parameters:
+      json_payload:
+        default: ""
+        description: The json object to send to xMatters. CHECKOUTTHEDOCSHERE
+        type: string
+      xm_url:
+        default: ${XM_URL}
+        description: Enter either your inbound integration url or use the CircleCI UI to add
+          your token under the 'XM_URL' env var
+        type: string
+    steps:
+    - run:
+        command: |
+          if [ -z "$BASH" ]; then
+            echo Bash not installed.
+            exit 1
+          fi
+        name: Provide error if non-bash shell
+    - run:
+        command: |
+          # Provide error if no url is set and error. Otherwise continue
+          if [ -z "<< parameters.xm_url >>" ]; then
+            echo "NO XM_URL SET"
+            echo "Please input your XM_URL value either in the settings for this project, or as a parameter for this orb."
+            exit 1
+          fi
+          if [-z "<< parameters.json_payload >>" ]; then
+            echo "NO json_payload passed"
+            echo "Enter some json to pass into xMatters. CHECKOUTTHEDOCSHERE"
+            exit 1
+          fi
+          
+          # Webhook properly set.
+          echo "Generating event to xMatters with payload '" << parameters.json_payload >> "'"
+          curl -X POST --header 'Content-type: application/json' \
+            --data '<< parameters.json_payload >>' \
+            "<< parameters.xm_url >>"          
+        name: xMatters Inbound Command
+        shell: /bin/bash
+description: |
+  Some nice helpful description sauce here.
+examples:
+  notify:
+    description: 'Notify some people via xMatters'
+    usage:
+      jobs:
+        build:
+          docker:
+             - image: <docker image>
+          steps:
+             - xmatters/notify:
+                xm_url: ${XM_URL}
+                author:     ""
+                project:    ""
+                workflow:   ""
+                branch:     ""
+                commit:     ""
+                job:        ""
+                job_status: ""
+      orbs:
+        xmatters: circleci/xmatters@1.0.0
+      version: 2.1
+      workflows:
+        your-workflow:
+          jobs:
+          - build
+  notify_raw:
+    description: 'Notify some people via xMatters using a custom payload'
+    usage:
+      jobs:
+        build:
+          docker:
+             - image: <docker image>
+          steps:
+             - xmatters/notify_raw:
+                xm_url: ${XM_URL}
+                json_payload: '{ "properties": { "Job": "job name here", "Author": "Deon Sanders" }, "recipients": [{"id": "dsanders"}] }'
+      orbs:
+        xmatters: circleci/xmatters@1.0.0
+      version: 2.1
+      workflows:
+        your-workflow:
+          jobs:
+          - build
+executors:
+  alpine:
+    docker:
+    - environment:
+        TERM: dumb
+      image: cibuilds/base:latest
+    resource_class: small
