@@ -4,11 +4,11 @@ commands:
     description: Generate an xMatters event
     parameters:
       author:
-        default: ""
-        description: Author of the build
+        default: "${CIRCLE_USERNAME}"
+        description: The GitHub or Bitbucket username of the user who triggered the build.
         type: string
       project:
-        default: ""
+        default: "${CIRCLE_PROJECT_REPONAME}"
         description: Project the build is from
         type: string
       workflow:
@@ -16,15 +16,23 @@ commands:
         description: The name of the workflow
         type: string
       branch:
-        default: ""
+        default: "${CIRCLE_BRANCH}"
         description: The branch the commit is on
         type: string
       commit:
-        default: ""
+        default: "${CIRCLE_SHA1}"
         description: The commit hash
         type: string
+      build:
+        default: "${CIRCLE_BUILD_NUM}"
+        description: The number of the CircleCI Build number
+        type: string
+      build_url:
+        default: "${CIRCLE_BUILD_URL}"
+        description: The URL for the current build.
+        type: string
       job:
-        default: ""
+        default: "${CIRCLE_JOB}"
         description: The job name
         type: string
       job_status:
@@ -62,6 +70,8 @@ commands:
                 "workflow":   "<< parameters.workflow >>",
                 "branch":     "<< parameters.branch >>",
                 "commit":     "<< parameters.commit >>",
+                "build":      "<< parameters.build",
+                "build_url":  "<< parameters.build_url",
                 "job":        "<< parameters.job >>",
                 "job_status": "<< parameters.job_status >>"
               } 
@@ -80,12 +90,14 @@ examples:
              - image: <docker image>
           steps:
              - xmatters/notify:
-                xm_url: ${XM_URL}
+                xm_url:     ${XM_URL}
                 author:     ""
                 project:    ""
                 workflow:   ""
                 branch:     ""
                 commit:     ""
+                build:      ""
+                build_url:  ""
                 job:        ""
                 job_status: ""
       orbs:
