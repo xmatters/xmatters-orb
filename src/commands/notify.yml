@@ -70,8 +70,8 @@ commands:
                 "workflow":   "<< parameters.workflow >>",
                 "branch":     "<< parameters.branch >>",
                 "commit":     "<< parameters.commit >>",
-                "build":      "<< parameters.build",
-                "build_url":  "<< parameters.build_url",
+                "build":      "<< parameters.build >>",
+                "build_url":  "<< parameters.build_url >>",
                 "job":        "<< parameters.job >>",
                 "job_status": "<< parameters.job_status >>"
               } 
