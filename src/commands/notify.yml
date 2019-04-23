@@ -72,15 +72,15 @@ commands:
             --data \
             "{\
               \"properties\": {\
-                \"author\":     \"<< parameters.author >>\",\
-                \"project\":    \"<< parameters.project >>\",\
+                \"author\":        \"<< parameters.author >>\",\
+                \"project\":       \"<< parameters.project >>\",\
                 \"workflow_id\":   \"<< parameters.workflow_id >>\",\
-                \"branch\":     \"<< parameters.branch >>\",\
-                \"commit\":     \"<< parameters.commit >>\",\
-                \"build\":      \"<< parameters.build >>\",\
-                \"build_url\":  \"<< parameters.build_url >>\",\
-                \"job\":        \"<< parameters.job >>\",\
-                \"job_status\": \"$XM_BUILD_STATUS\" \
+                \"branch\":        \"<< parameters.branch >>\",\
+                \"commit\":        \"<< parameters.commit >>\",\
+                \"build\":         \"<< parameters.build >>\",\
+                \"build_url\":     \"<< parameters.build_url >>\",\
+                \"job\":           \"<< parameters.job >>\",\
+                \"job_status\":    \"$XM_BUILD_STATUS\" \
               } \
             }" "<< parameters.xm_url >>"
         name: xMatters Inbound Command
@@ -137,7 +137,7 @@ commands:
         name: xMatters Inbound Command
         shell: /bin/bash
 description: |
-  Generate an xMatters event based on a job build
+  Generate an xMatters event based on a job build. For more details see here: https://github.com/xmatters/xm-labs-circleci-orb
 examples:
   notify:
     description: 'Notify some people via xMatters'
@@ -166,7 +166,13 @@ examples:
           steps:
              - xmatters/notify_raw:
                 xm_url: ${XM_URL}
-                json_payload: "{ \"properties\": { \"job\": \"job name here\", \"author\": \"Deon Sanders\", \"something\": \"value\" }, \"recipients\": [{\"id\": \"dsanders\"}] }"
+                json_payload: "{ \"properties\": { \
+                    \"job\": \"job name here\", \
+                    \"author\": \"Deon Sanders\", \
+                    \"something\": \"value\" 
+                  }, \
+                  \"recipients\": [{ \"id\": \"dsanders\" }] \
+                }"
       orbs:
         xmatters: circleci/xmatters@1.0.0
       version: 2.1
