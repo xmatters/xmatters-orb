@@ -1,7 +1,7 @@
 version: 2.1
 commands:
   notify:
-    description: Generate an xMatters event
+    description: Generate an xMatters event based on the build status of a job
     parameters:
       author:
         default: "${CIRCLE_USERNAME}"
@@ -86,11 +86,11 @@ commands:
         name: xMatters Inbound Command
         shell: /bin/bash
   notify_raw:
-    description: Generate an xMatters event with the given JSON payload
+    description: Generate an xMatters event with the given JSON payload. See here for details https://help.xmatters.com/xmapi/index.html#trigger-an-event
     parameters:
       json_payload:
         default: ""
-        description: The json object to send to xMatters. CHECKOUTTHEDOCSHERE
+        description: The json object to send to xMatters.
         type: string
       xm_url:
         default: ${XM_URL}
@@ -105,6 +105,16 @@ commands:
             exit 1
           fi
         name: Provide error if non-bash shell
+    - run:
+        command: |
+          echo 'export XM_BUILD_STATUS="fail"' >> $BASH_ENV
+        name: xMatters - Setting Failure Condition
+        when: on_fail
+    - run:
+        command: |
+          echo 'export XM_BUILD_STATUS="success"' >> $BASH_ENV
+        name: xMatters - Setting Success Condition
+        when: on_success
     - run:
         command: |
           # Provide error if no url is set and error. Otherwise continue
@@ -127,7 +137,7 @@ commands:
         name: xMatters Inbound Command
         shell: /bin/bash
 description: |
-  Some nice helpful description sauce here.
+  Generate an xMatters event based on a job build
 examples:
   notify:
     description: 'Notify some people via xMatters'
@@ -138,16 +148,7 @@ examples:
              - image: <docker image>
           steps:
              - xmatters/notify:
-                xm_url:     $XM_URL
-                author:      ""
-                project:     ""
-                workflow_id: ""
-                branch:      ""
-                commit:      ""
-                build:       ""
-                build_url:   ""
-                job:         ""
-                job_status:  ""
+                author: "Deon Sanders"
       orbs:
         xmatters: circleci/xmatters@1.0.0
       version: 2.1
@@ -165,7 +166,7 @@ examples:
           steps:
              - xmatters/notify_raw:
                 xm_url: ${XM_URL}
-                json_payload: '{ "properties": { "Job": "job name here", "Author": "Deon Sanders" }, "recipients": [{"id": "dsanders"}] }'
+                json_payload: "{ \"properties\": { \"job\": \"job name here\", \"author\": \"Deon Sanders\", \"something\": \"value\" }, \"recipients\": [{\"id\": \"dsanders\"}] }"
       orbs:
         xmatters: circleci/xmatters@1.0.0
       version: 2.1
